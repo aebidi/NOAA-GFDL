@@ -1,0 +1,67 @@
+# ------------------
+# General settings
+# ------------------
+base_data_path: "/mnt/datalake/abdullah/gfdl_mirror"
+raw_data_dir: "raw"
+log_file: "pipeline.log - v2"
+
+# ------------------
+# Processing settings
+# ------------------
+geographical_scope:
+  min_lon: 12.0
+  max_lon: 41.0
+  min_lat: -26.0
+  max_lat: -4.0
+
+# ------------------
+# Data structure mapping
+# ------------------
+variable_categories:
+  soil_moisture: ["mrso", "mrsol", "mrro"]
+  radiation: ["rsds", "rsus", "rss", "par"]
+  energy_fluxes: ["hfls", "hfss", "hfgs"]
+  temperature: ["tsl", "ts"]
+
+# ----------------------------------------------------
+# Datasets to download
+# ----------------------------------------------------
+datasets:
+  - name: "ESM4_historical"
+    model: "esm4"
+    experiment: "historical"
+    url_template: "https://g-52ba3.fd635.8443.data.globus.org/css03_data/CMIP6/CMIP/NOAA-GFDL/GFDL-ESM4/{experiment}/{ensemble_member}/{mip_table}/{variable}/{grid}/v20190726/{variable}_{mip_table}_GFDL-ESM4_{experiment}_{ensemble_member}_{grid}_{time_period}.nc"
+    ensemble_members:
+      - "r1i1p1f1"
+      - "r2i1p1f1"
+      - "r3i1p1f1"
+    time_periods:
+      - "185001-194912"
+      - "195001-201412"
+    
+    # list of MIP tables to try for each variable
+    mip_tables_to_try:
+      - "Lmon"
+      - "Emon"
+      - "Amon"
+      - "day"
+
+    # list of grid identifiers to try
+    grids_to_try:
+      - "gr1"
+      - "gr2"
+    
+    # list of variables to find
+    variables_to_download:
+      - "mrso"
+      - "mrsol"
+      - "mrro"
+      - "rsds"
+      - "rsus"
+      - "rss"
+      - "par"
+      - "hfls"
+      - "hfss"
+      - "hfgs"
+      - "tsl"
+      - "ts"

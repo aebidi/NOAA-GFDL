@@ -1,0 +1,12 @@
+# Ignore the Python virtual environment
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore the large data directories. The repository is for CODE, not data.
+/gfdl_mirror/
+
+# Ignore log files
+*.log
