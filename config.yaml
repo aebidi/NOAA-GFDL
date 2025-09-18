@@ -36,8 +36,12 @@ datasets:
       - "r2i1p1f1"
       - "r3i1p1f1"
     time_periods:
-      - "185001-194912"
-      - "195001-201412"
+      - period_string: "185001-194912"
+        start_year: 1850
+        end_year: 1949
+      - period_string: "195001-201412"
+        start_year: 1950
+        end_year: 2014
     
     # list of MIP tables to try for each variable
     mip_tables_to_try:
@@ -65,3 +69,20 @@ datasets:
       - "hfgs"
       - "tsl"
       - "ts"
+
+# ----------------------------------------------------
+# Data Integrity Checks
+# ----------------------------------------------------
+validation_rules:
+  historical:
+    expected_start_year: 1850
+    expected_end_year: 2014
+  # plausible data ranges for key variables
+  # using scientific standard units (K for Kelvin, W m-2 for radiation)
+  variable_ranges:
+    tsl:  { min: 180, max: 340 } # Soil Temp (K)
+    ts:   { min: 180, max: 340 } # Surface Temp (K)
+    rsds: { min: 0,   max: 1400 } # Downward Shortwave Radiation (W m-2)
+    rsus: { min: 0,   max: 1400 } # Upward Shortwave Radiation (W m-2)
+    # default range for variables not explicitly listed
+    default: { min: -1.0e10, max: 1.0e10 }
