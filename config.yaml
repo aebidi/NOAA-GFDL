@@ -3,16 +3,20 @@
 # ------------------
 base_data_path: "/mnt/datalake/abdullah/gfdl_mirror"
 raw_data_dir: "raw"
-log_file: "pipeline.log - v2"
+log_file: "pipeline.log - latest"
 
 # ------------------
-# Processing settings
+# List of processing regions with their configuration
 # ------------------
-geographical_scope:
-  min_lon: 12.0
-  max_lon: 41.0
-  min_lat: -26.0
-  max_lat: -4.0
+processing_regions:
+  - name: "Southern_Africa" # same scope as CDO
+    bounding_box: { min_lon: 12.0, max_lon: 41.0, min_lat: -26.0, max_lat: -4.0 }
+  - name: "East_Africa"
+    bounding_box: { min_lon: 22.0, max_lon: 52.0, min_lat: -12.0, max_lat: 22.0 }
+  - name: "West_Africa"
+    bounding_box: { min_lon: -20.0, max_lon: 20.0, min_lat: -4.0, max_lat: 25.0 }
+  - name: "Latin_America"
+    bounding_box: { min_lon: -118.0, max_lon: -34.0, min_lat: -56.0, max_lat: 33.0 }
 
 # ------------------
 # Data structure mapping
