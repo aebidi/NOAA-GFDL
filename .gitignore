@@ -11,6 +11,4 @@ __pycache__/
 # Ignore log files
 *.log
 
-*.png
-visualise_cdf.py
-visualise_map.py
+
