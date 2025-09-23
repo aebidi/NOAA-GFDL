@@ -1,56 +1,102 @@
 import xarray as xr
 import os
+import numpy as np
 
-# --- Configuration ---
-# path to the processed, region-specific data file
-PROCESSED_FILE_PATH = "/mnt/datalake/abdullah/gfdl_mirror/esm4/historical/temperature/tsl_Lmon_GFDL-ESM4_historical_r1i1p1f1_gr1_195001-201412.nc"
+# --- Configuration: choose which processed file to inspect ---
 
-# coordinates for a known land location (Lusaka, Zambia)
-# using negative for southern latitude
-TARGET_LAT = -15.4
-TARGET_LON = 28.3
+# 1. Pick a region. Options: "Southern_Africa", "East_Africa", "West_Africa", "Latin_America", "Southeast_Asia"
+REGION_NAME = "Southeast_Asia"
+
+# 2. Define the variable and its category to build the path.
+VARIABLE_ID = "mrso"
+VARIABLE_CATEGORY = "soil_moisture" # e.g., "temperature", "radiation", "soil_moisture"
+
+# 3. Define the specific file properties.
+MIP_TABLE = "day" # e.g., "Lmon", "Amon", "day"
+ENSEMBLE_MEMBER = "r1i1p1f1" # e.g., "r1i1p1f1", "r2i1p1f1", "r3i1p1f1"
+TIME_PERIOD = "18500101-18691231"
+GRID = "gr1" # e.g., "gr1", "gn", "gr", "gr1z"
+VERSION = "v20180701" # e.g., "v20190726", "v20180701"
+
+# --- this script builds the path and filename automatically ---
+FILE_NAME = f"{VARIABLE_ID}_{MIP_TABLE}_GFDL-ESM4_historical_{ENSEMBLE_MEMBER}_{GRID}_{TIME_PERIOD}.nc"
+PROCESSED_FILE_PATH = os.path.join(
+    "/mnt/datalake/abdullah/gfdl_mirror",
+    REGION_NAME,
+    "esm4",
+    "historical",
+    VARIABLE_CATEGORY,
+    FILE_NAME
+)
 
 
-def inspect_specific_point(file_path, lat, lon):
-    """Opens a NetCDF file and inspects the data at the coordinate nearest to the target."""
-    print("="*60)
-    print(f"Inspecting Specific Coordinate in: {os.path.basename(file_path)}")
-    print(f"Target Location: Lusaka, Zambia (Lat: {lat}, Lon: {lon})")
-    print("="*60)
+def inspect_processed_file(file_path, variable_id):
+    """
+    Opens a processed NetCDF file and prints a detailed textual summary of its contents.
+    """
+    print("="*70)
+    print(f"INSPECTING PROCESSED FILE: {os.path.basename(file_path)}")
+    print(f"LOCATION: {os.path.dirname(file_path)}")
+    print("="*70)
 
     if not os.path.exists(file_path):
-        print(f"\nERROR: File not found at '{file_path}'.\nPlease check the path.\n")
+        print(f"\n[ERROR] FILE NOT FOUND.\n  - Please check the configuration at the top of the script.")
+        print(f"  - Searched for: {file_path}")
         return
 
     try:
         with xr.open_dataset(file_path) as ds:
-            # .sel() with method='nearest' to find the closest grid point to our target
-            # this is the standard way to query data for a specific real-world location
-            data_at_point = ds['tsl'].sel(lat=lat, lon=lon, method='nearest')
-            
-            print(f"\nModel grid point closest to target:")
-            # .item() converts the single value to a standard Python number
-            print(f"  - Actual Latitude: {data_at_point.lat.values.item():.2f}")
-            print(f"  - Actual Longitude: {data_at_point.lon.values.item():.2f}\n")
+            # --- 1. Global Attributes ---
+            print("\n[1] GLOBAL ATTRIBUTES:")
+            for key, value in ds.attrs.items():
+                print(f"  - {key}: {value}")
 
-            # --- Displaying the data ---
-            # get the data for the first time step (January 1950) at all soil depths
-            first_timestep_data = data_at_point.isel(time=0)
-            
-            print("--- Soil Temperature Profile (tsl) at this point for the first time step ---")
-            print(f"Time: {first_timestep_data.time.dt.strftime('%Y-%m-%d').values}")
-            print(f"Units: {first_timestep_data.attrs.get('units', 'K')}\n")
-            
-            # print the temperature at each depth
-            for i, depth in enumerate(first_timestep_data.depth.values):
-                temperature = first_timestep_data.values[i]
-                print(f"  Depth: {depth:.2f} meters, Temperature: {temperature:.2f} K")
-            
-            print("\nThis confirms that valid numerical data exists in the file.\n")
+            # --- 2. Dimensions ---
+            print("\n[2] DIMENSIONS:")
+            for dim, size in ds.dims.items():
+                print(f"  - {dim}: {size}")
+
+            # --- 3. Coordinates ---
+            print("\n[3] COORDINATES:")
+            for name, coord in ds.coords.items():
+                print(f"  - {name} ({coord.dims}):")
+                print(f"    - Values: {coord.values.min()} to {coord.values.max()}")
+                if 'units' in coord.attrs:
+                    print(f"    - Units: {coord.attrs['units']}")
+
+            # --- 4. Data Variables ---
+            print("\n[4] DATA VARIABLES:")
+            for name, var in ds.data_vars.items():
+                print(f"  - {name} {var.dims}:")
+                for attr, value in var.attrs.items():
+                    print(f"    - {attr}: {value}")
+
+            # --- 5. Data Sample from a Central Point ---
+            print("\n[5] DATA SAMPLE:")
+            if variable_id in ds.data_vars:
+                target_lat = (ds.lat.min() + ds.lat.max()).item() / 2
+                target_lon = (ds.lon.min() + ds.lon.max()).item() / 2
+                
+                data_at_point = ds[variable_id].sel(lat=target_lat, lon=target_lon, method='nearest')
+                
+                print(f"  - Sampling variable '{variable_id}' near the center of the region.")
+                print(f"  - Model grid point closest to target: Lat={data_at_point.lat.item():.2f}, Lon={data_at_point.lon.item():.2f}")
+                
+                sample_slice = data_at_point.isel(time=0)
+                
+                # using the xarray method to format the date string
+                # .dt accessor works on datetime coordinates
+                # .strftime() formats the date
+                # .item() extracts the single value cleanly
+                date_string = sample_slice.time.dt.strftime('%Y-%m-%d').item()
+
+                print(f"  - Value(s) at first time step ({date_string}):")
+                print(f"    {sample_slice.values}")
+            else:
+                print(f"  - Variable '{variable_id}' not found in this file's data variables.")
 
     except Exception as e:
-        print(f"\nERROR: Could not read or process the file. Reason: {e}\n")
-
+        print(f"\n[ERROR] An error occurred while reading the file: {e}")
 
 if __name__ == "__main__":
-    inspect_specific_point(PROCESSED_FILE_PATH, TARGET_LAT, TARGET_LON)
+    inspect_processed_file(PROCESSED_FILE_PATH, VARIABLE_ID)
