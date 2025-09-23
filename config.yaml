@@ -3,11 +3,11 @@
 # ------------------
 base_data_path: "/mnt/datalake/abdullah/gfdl_mirror"
 raw_data_dir: "raw"
-log_file: "pipeline.log - latest"
+log_file: "pipeline.log - latest latest"
 
-# ------------------
+# -----------------------------------------------------
 # List of processing regions with their configuration
-# ------------------
+# -----------------------------------------------------
 processing_regions:
   - name: "Southern_Africa" # same scope as CDO
     bounding_box: { min_lon: 12.0, max_lon: 41.0, min_lat: -26.0, max_lat: -4.0 }
@@ -17,66 +17,73 @@ processing_regions:
     bounding_box: { min_lon: -20.0, max_lon: 20.0, min_lat: -4.0, max_lat: 25.0 }
   - name: "Latin_America"
     bounding_box: { min_lon: -118.0, max_lon: -34.0, min_lat: -56.0, max_lat: 33.0 }
+  - name: "Southeast_Asia"
+    bounding_box: { min_lon: 90.0, max_lon: 142.0, min_lat: -12.0, max_lat: 25.0 }
 
-# ------------------
+# ------------------------
 # Data structure mapping
-# ------------------
+# ------------------------
 variable_categories:
   soil_moisture: ["mrso", "mrsol", "mrro"]
   radiation: ["rsds", "rsus", "rss", "par"]
   energy_fluxes: ["hfls", "hfss", "hfgs"]
   temperature: ["tsl", "ts"]
 
-# ----------------------------------------------------
+# -----------------------
 # Datasets to download
-# ----------------------------------------------------
+# -----------------------
 datasets:
   - name: "ESM4_historical"
     model: "esm4"
     experiment: "historical"
-    url_template: "https://g-52ba3.fd635.8443.data.globus.org/css03_data/CMIP6/CMIP/NOAA-GFDL/GFDL-ESM4/{experiment}/{ensemble_member}/{mip_table}/{variable}/{grid}/v20190726/{variable}_{mip_table}_GFDL-ESM4_{experiment}_{ensemble_member}_{grid}_{time_period}.nc"
-    ensemble_members:
-      - "r1i1p1f1"
-      - "r2i1p1f1"
-      - "r3i1p1f1"
-    time_periods:
-      - period_string: "185001-194912"
-        start_year: 1850
-        end_year: 1949
-      - period_string: "195001-201412"
-        start_year: 1950
-        end_year: 2014
+    url_template: "https://g-52ba3.fd635.8443.data.globus.org/css03_data/CMIP6/CMIP/NOAA-GFDL/GFDL-ESM4/{experiment}/{ensemble_member}/{mip_table}/{variable}/{grid}/{version}/{variable}_{mip_table}_GFDL-ESM4_{experiment}_{ensemble_member}_{grid}_{time_period}.nc"
     
-    # list of MIP tables to try for each variable
-    mip_tables_to_try:
-      - "Lmon"
-      - "Emon"
-      - "Amon"
-      - "day"
-
-    # list of grid identifiers to try
-    grids_to_try:
-      - "gr1"
-      - "gr2"
+    # --- Global discovery lists ---
+    ensemble_members: ["r1i1p1f1", "r2i1p1f1", "r3i1p1f1"]
+    grids_to_try: ["gr1", "gn", "gr", "gr1z"]
+    versions_to_try: ["v20190726", "v20180701"]
     
-    # list of variables to find
-    variables_to_download:
-      - "mrso"
-      - "mrsol"
-      - "mrro"
-      - "rsds"
-      - "rsus"
-      - "rss"
-      - "par"
-      - "hfls"
-      - "hfss"
-      - "hfgs"
-      - "tsl"
-      - "ts"
+    # --- Configuration groups ---
+    # grouped by time frequency to ensure correct time periods are used
+    configuration_groups:
+      - name: "Monthly_Data"
+        mip_tables: ["Lmon", "Emon", "Amon"]
+        time_periods: ["185001-194912", "195001-201412"]
+        variables:
+          - "mrso"
+          - "mrsol"
+          - "mrro"
+          - "rsds"
+          - "rsus"
+          - "rss"
+          - "par"
+          - "hfls"
+          - "hfss"
+          - "hfgs"
+          - "tsl"
+          - "ts"
+    
+      - name: "Daily_Data"
+        mip_tables: ["day"]
+        time_periods:
+          - "18500101-18691231"
+          - "18700101-18891231"
+          - "18900101-19091231"
+          - "19100101-19291231"
+          - "19300101-19491231"
+          - "19500101-19691231"
+          - "19700101-19891231"
+          - "19900101-20091231"
+          - "20100101-20141231"
 
-# ----------------------------------------------------
+        variables:
+          - "mrso"
+          - "mrro"
+          - "rsds"
+
+# ------------------------
 # Data Integrity Checks
-# ----------------------------------------------------
+# ------------------------
 validation_rules:
   historical:
     expected_start_year: 1850
