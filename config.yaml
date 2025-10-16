@@ -3,7 +3,8 @@
 # ------------------
 base_data_path: "/mnt/datalake/abdullah/gfdl_mirror"
 raw_data_dir: "raw"
-log_file: "pipeline.log - latest latest"
+log_file: "pipeline.log - Phases 1 & 2"
+
 
 # -----------------------------------------------------
 # List of processing regions with their configuration
@@ -29,18 +30,21 @@ variable_categories:
   energy_fluxes: ["hfls", "hfss", "hfgs"]
   temperature: ["tsl", "ts"]
 
-# -----------------------
+# ----------------------
 # Datasets to download
-# -----------------------
+# ----------------------
+
+# PHASE 1 DATASET (Historical)
 datasets:
   - name: "ESM4_historical"
+    type: "historical"
     model: "esm4"
     experiment: "historical"
     url_template: "https://g-52ba3.fd635.8443.data.globus.org/css03_data/CMIP6/CMIP/NOAA-GFDL/GFDL-ESM4/{experiment}/{ensemble_member}/{mip_table}/{variable}/{grid}/{version}/{variable}_{mip_table}_GFDL-ESM4_{experiment}_{ensemble_member}_{grid}_{time_period}.nc"
     
     # --- Global discovery lists ---
     ensemble_members: ["r1i1p1f1", "r2i1p1f1", "r3i1p1f1"]
-    grids_to_try: ["gr1", "gn", "gr", "gr1z"]
+    grids_to_try: ["gr1"]
     versions_to_try: ["v20190726", "v20180701"]
     
     # --- Configuration groups ---
@@ -56,10 +60,10 @@ datasets:
           - "rsds"
           - "rsus"
           - "rss"
-          - "par"
+          #- "par"        NOT AVAILABLE
           - "hfls"
           - "hfss"
-          - "hfgs"
+          #- "hfgs"       NOT AVAILABLE
           - "tsl"
           - "ts"
     
@@ -80,6 +84,77 @@ datasets:
           - "mrso"
           - "mrro"
           - "rsds"
+
+      - name: "Hourly_Data"
+        mip_tables: ["3hr"]
+        time_periods:
+          - "185001010130-186912312230"
+          - "187001010130-188912312230"
+          - "189001010130-190912312230"
+          - "191001010130-192912312230"
+          - "193001010130-194912312230"
+          - "195001010130-196912312230"
+          - "197001010130-198912312230"
+          - "199001010130-200912312230"
+          - "201001010130-201412312230"
+
+        variables:
+          - "mrso"
+          - "mrro"
+          - "rsds"
+          - "rsus"
+        
+  # --- PHASE 2 DATASETS (Scenarios) ---
+  ## SSP2-4.5
+  - name: "ESM4_ssp245"
+    type: "scenario"
+    model: "esm4"
+    experiment: "ssp245" 
+    url_template: "http://esgf-node.ornl.gov/thredds/fileServer/css03_data/CMIP6/ScenarioMIP/NOAA-GFDL/GFDL-ESM4/{experiment}/{ensemble_member}/{mip_table}/{variable}/{grid}/{version}/{variable}_{mip_table}_GFDL-ESM4_{experiment}_{ensemble_member}_{grid}_{time_period}.nc"
+    ensemble_members: ["r1i1p1f1", "r2i1p1f1", "r3i1p1f1"]
+    grids_to_try: ["gr1"]
+    versions_to_try: ["v20190726", "v20180701"]
+    configuration_groups:
+      - name: "Monthly_Data"
+        mip_tables: ["Lmon", "Emon", "Amon"]
+        time_periods: ["201501-203412", "203501-205412", "205501-207412", "207501-209412", "209501-210012", "201501-210012"]
+        variables: ["hfls", "hfss", "mrro", "mrso", "mrsol", "rsds", "rss", "rsus", "ts", "tsl"]
+
+      - name: "Daily_Data"
+        mip_tables: ["day"]
+        time_periods: ["20150101-20341231", "20350101-20541231", "20550101-20741231", "20750101-20941231", "20950101-21001231"]
+        variables: ["mrro", "mrso", "mrsol", "rsds", "rss", "rsus"]
+
+      - name: "Hourly_Data"
+        mip_tables: ["3hr"]
+        time_periods: ["201501010130-203412312230", "203501010130-205412312230", "205501010130-207412312230", "207501010130-209412312230", "209501010130-210012312230"]
+        variables: ["mrro", "mrso", "mrsol", "rsds", "rsus"]
+
+## SSP5-8.5
+  - name: "ESM4_ssp585"
+    type: "scenario"
+    model: "esm4"
+    experiment: "ssp585"
+    url_template: "http://esgf-node.ornl.gov/thredds/fileServer/css03_data/CMIP6/ScenarioMIP/NOAA-GFDL/GFDL-ESM4/{experiment}/{ensemble_member}/{mip_table}/{variable}/{grid}/{version}/{variable}_{mip_table}_GFDL-ESM4_{experiment}_{ensemble_member}_{grid}_{time_period}.nc"
+    ensemble_members: ["r1i1p1f1", "r2i1p1f1", "r3i1p1f1"]
+    grids_to_try: ["gr1"]
+    versions_to_try: ["v20190726", "v20180701"]
+    configuration_groups:
+      - name: "Monthly_Data"
+        mip_tables: ["Lmon", "Emon", "Amon"]
+        time_periods: ["201501-203412", "203501-205412", "205501-207412", "207501-209412", "209501-210012", "201501-210012"]
+        variables: ["hfls", "hfss", "mrro", "mrso", "mrsol", "rsds", "rss", "rsus", "ts", "tsl"]
+
+      - name: "Daily_Data"
+        mip_tables: ["day"]
+        time_periods: ["20150101-20341231", "20350101-20541231", "20550101-20741231", "20750101-20941231", "20950101-21001231"]
+        variables: ["mrro", "mrso", "mrsol", "rsds", "rss", "rsus"]
+
+      - name: "Hourly_Data"
+        mip_tables: ["3hr"]
+        time_periods: ["201501010130-203412312230", "203501010130-205412312230", "205501010130-207412312230", "207501010130-209412312230", "209501010130-210012312230"]
+        variables: ["mrro", "mrso", "mrsol", "rsds", "rsus"]
+
 
 # ------------------------
 # Data Integrity Checks

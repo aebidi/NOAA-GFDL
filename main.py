@@ -22,9 +22,9 @@ def main():
     base_path = config['base_data_path']
     log_path = os.path.join(base_path, config['log_file'])
     setup_logging(log_path)
-    logging.info("--- GFDL Data Pipeline Started (Africa, Latin America) ---")
+    logging.info("--- GFDL Data Pipeline Started (Phases 1 & 2) ---")
 
-    # --- Load Configuration ---
+    # --- Load configuration ---
     processing_regions = config.get('processing_regions', [])
     if not processing_regions:
         logging.error("No 'processing_regions' defined in config.yaml. Aborting.")
@@ -80,10 +80,22 @@ def main():
                                             geo_scope = region['bounding_box']
                                             
                                             category = get_variable_category(variable, variable_map)
-                                            final_processed_dir = os.path.join(
+                                            '''final_processed_dir = os.path.join(
                                                 base_path, region_name, dataset['model'], 
                                                 dataset['experiment'], category
-                                            )
+                                            )'''
+                                            # building the base path for the region and model
+                                            base_processed_dir = os.path.join(base_path, region_name, dataset['model'])
+                                            
+                                            # check the dataset type from the config
+                                            if dataset.get('type') == 'scenario':
+                                                # if it's a scenario, add the 'scenarios' subfolder
+                                                final_processed_dir = os.path.join(base_processed_dir, 'scenarios', dataset['experiment'], category)
+                                            else:
+                                                # otherwise use the existing structure (for historical)
+                                                final_processed_dir = os.path.join(base_processed_dir, dataset['experiment'], category)
+
+
                                             ensure_dir_exists(final_processed_dir)
                                             
                                             processed_file_path = os.path.join(final_processed_dir, file_name)
