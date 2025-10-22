@@ -3,7 +3,7 @@
 # ------------------
 base_data_path: "/mnt/datalake/abdullah/gfdl_mirror"
 raw_data_dir: "raw"
-log_file: "pipeline.log - Phases 1 & 2"
+log_file: "pipeline.log - Phases 1, 2 & 3"
 
 # -----------------------------------------------------
 # List of processing regions with their configuration
@@ -27,13 +27,16 @@ variable_categories:
   soil_moisture: ["mrso", "mrsol", "mrro"]
   radiation: ["rsds", "rsus", "rss", "par"]
   energy_fluxes: ["hfls", "hfss", "hfgs"]
-  temperature: ["tsl", "ts"]
+  temperature: ["tsl", "ts", "tas", "tasmin", "tasmax"]
+  precipitation: ["pr"]
+  humidity: ["hus"] 
+  wind: ["sfcWind"]
 
 # ----------------------
 # Datasets to download
 # ----------------------
 
-# PHASE 1 DATASET (Historical)
+# --- PHASE 1 DATASET (Historical) ---
 datasets:
   - name: "ESM4_historical"
     type: "historical"
@@ -153,6 +156,38 @@ datasets:
         mip_tables: ["3hr"]
         time_periods: ["201501010130-203412312230", "203501010130-205412312230", "205501010130-207412312230", "207501010130-209412312230", "209501010130-210012312230"]
         variables: ["mrro", "mrso", "mrsol", "rsds", "rsus"]
+
+# --- PHASE 3 DATASET (SPEAR) ---
+  - name: "ESM4_SPEAR_historical"
+    type: "forecast_historical" # new type to distinguish it
+    model: "spear" # new model name for directory structure
+    experiment: "historical"
+    # URL template based on the SPEAR documentation
+    url_template: "https://noaa-gfdl-spear-large-ensembles-pds.s3.amazonaws.com/SPEAR/GFDL-LARGE-ENSEMBLES/CMIP/NOAA-GFDL/GFDL-SPEAR-MED/{experiment}/{ensemble_member}/{mip_table}/{variable}/{grid}/{version}/{variable}_{mip_table}_GFDL-SPEAR-MED_{experiment}_{ensemble_member}_{grid}_{time_period}.nc"
+    
+    # SPEAR has 30 ensemble members, we will start by searching for the primary ones
+    ensemble_members: ["r1i1p1f1", "r2i1p1f1", "r3i1p1f1", "r4i1p1f1", "r5i1p1f1", "r6i1p1f1", "r7i1p1f1", "r8i1p1f1", "r9i1p1f1", "r10i1p1f1", "r11i1p1f1", "r12i1p1f1", "r13i1p1f1", "r14i1p1f1", "r15i1p1f1", "r16i1p1f1", "r17i1p1f1", "r18i1p1f1", "r19i1p1f1", "r20i1p1f1", "r21i1p1f1", "r22i1p1f1", "r23i1p1f1", "r24i1p1f1", "r25i1p1f1", "r26i1p1f1", "r27i1p1f1", "r28i1p1f1", "r29i1p1f1", "r30i1p1f1"]
+    grids_to_try: ["gr3"] # documentation specifies 'gr3'
+    versions_to_try: ["v20210201"] # documentation specifies this version
+    
+    configuration_groups:
+      - name: "Monthly_Data"
+        mip_tables: ["Amon"]
+        time_periods: ["192101-201412"]
+        variables:
+          - "tas"  # near-surface air temperature
+          - "pr"   # precipitation
+          - "sfcWind"   # near-surface wind speed
+          - "hus"  # specific humidity
+      
+      - name: "Daily_Data"
+        mip_tables: ["day"]
+        time_periods: ["19210101-19301231", "19310101-19401231", "19410101-19501231", "19510101-19601231", "19610101-19701231", "19710101-19801231", "19810101-19901231", "19910101-20001231", "20010101-20101231", "20110101-20141231"]  # daily SPEAR data is in 10-year chunks
+        variables:
+          - "tas"  # near-surface air temperature
+          - "tasmin"  # daily minimum near-surface air temperature
+          - "tasmax"  # # daily maximum near-surface air temperature
+          - "pr"   # precipitation
 
 
 # ------------------------
