@@ -1,6 +1,7 @@
 import os
 import yaml
 import logging
+import argparse
 from modules.utils import setup_logging, ensure_dir_exists, check_storage
 from modules.downloader import download_file
 from modules.processor import process_netcdf_file
@@ -15,6 +16,18 @@ def get_variable_category(variable, categories_map):
 
 def main():
     """Main pipeline orchestrator."""
+
+    # --- argument parsing ---
+    parser = argparse.ArgumentParser(description="GFDL Data Pipeline: Download and process climate data.")
+    parser.add_argument(
+        '--name',
+        action='append', # allows specifying the flag multiple times
+        help='The specific dataset name from config.yaml to run (e.g., --name ESM4_ssp245). Can be used multiple times.'
+    )
+    args = parser.parse_args()
+    # --- end of argparse ---
+
+
     with open("config.yaml", 'r') as f:
         config = yaml.safe_load(f)
 
@@ -22,7 +35,7 @@ def main():
     base_path = config['base_data_path']
     log_path = os.path.join(base_path, config['log_file'])
     setup_logging(log_path)
-    logging.info("--- GFDL Data Pipeline Started (Phases 1 & 2) ---")
+    logging.info("--- GFDL Data Pipeline Started (Phases 1, 2 & 3) ---")
 
     # --- Load configuration ---
     processing_regions = config.get('processing_regions', [])
@@ -34,8 +47,27 @@ def main():
     raw_download_dir = os.path.join(base_path, config['raw_data_dir'])
     ensure_dir_exists(raw_download_dir)
 
+    # --- filter datasets based on arguments ---
+    datasets_to_run = []
+    if args.name:
+        logging.info(f"Running only for specified datasets: {args.name}")
+        all_datasets = config.get('datasets', [])
+        for name in args.name:
+            found = False
+            for dataset in all_datasets:
+                if dataset['name'] == name:
+                    datasets_to_run.append(dataset)
+                    found = True
+                    break
+            if not found:
+                logging.warning(f"Dataset name '{name}' provided via command line was not found in config.yaml.")
+    else:
+        # if no --name argument is given, run all datasets by default
+        logging.info("No specific dataset name provided. Running for all datasets in config.yaml.")
+        datasets_to_run = config.get('datasets', [])
+
     # --- Main Loop ---
-    for dataset in config['datasets']:
+    for dataset in datasets_to_run:
         logging.info(f"\n===== Starting Dataset: {dataset['name']} =====")
         
         # get the global discovery lists

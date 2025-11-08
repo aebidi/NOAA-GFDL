@@ -8,5 +8,8 @@ __pycache__/
 # Ignore the large data directories. The repository is for CODE, not data.
 /gfdl_mirror/
 
+# Ignoring narccap regional downloader script for now
+regional_main.py
+
 
 
