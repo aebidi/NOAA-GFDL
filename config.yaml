@@ -3,7 +3,7 @@
 # ------------------
 base_data_path: "/mnt/datalake/abdullah/gfdl_mirror"
 raw_data_dir: "raw"
-log_file: "pipeline.log - Phases 1, 2 & 3"
+log_file: "/mnt/datalake/abdullah/gfdl_mirror/Pipeline_Logs/pipeline.log - Phases 1, 2 & 3 (re-run)"
 
 # -----------------------------------------------------
 # List of processing regions with their configuration
